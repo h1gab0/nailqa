@@ -76,11 +76,12 @@ const NavLinks = styled(motion.div)`
   }
 `;
 
-const NavLink = styled(Link)`
+const NavLink = styled.a`
   color: ${({ theme }) => theme.colors.text};
   font-weight: 500;
   position: relative;
   transition: color 0.3s ease;
+  cursor: pointer;
 
   &:after {
     content: '';
@@ -169,12 +170,13 @@ const MenuButton = styled.button`
   }
 `;
 
-const MobileNavLink = styled(Link)`
+const MobileNavLink = styled.a`
   color: ${({ theme }) => theme.colors.text};
   font-size: 1.2rem;
   padding: 1rem;
   width: 100%;
   text-align: center;
+  cursor: pointer;
   &:hover {
     color: ${({ theme }) => theme.colors.primary};
     background-color: ${({ theme }) => theme.colors.cardBackground};
@@ -236,24 +238,42 @@ function Header() {
     closeMenu();
   }, [location.pathname, navigate, closeMenu, base]);
 
-  const handleScheduleClick = useCallback((e) => {
-    e.preventDefault();
-    navigate(`${base}/schedule`);
+  const handleNavClick = useCallback((path) => {
+    const homePath = base || '/';
+    if (location.pathname !== homePath) {
+      navigate(homePath);
+    }
+    setTimeout(() => {
+      document.querySelector(path)?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
     closeMenu();
-  }, [navigate, closeMenu, base]);
+  }, [location.pathname, navigate, closeMenu, base]);
+
+  const scrollToTop = useCallback(() => {
+    const homePath = base || '/';
+    if (location.pathname === homePath) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    } else {
+      navigate(homePath);
+    }
+    closeMenu();
+  }, [location.pathname, navigate, closeMenu, base]);
 
   return (
     <StyledHeader>
       <Nav>
-        <Logo to={base || '/'} onClick={scrollToTop}>
+        <Logo as="a" onClick={scrollToTop}>
           {loading ? 'Loading...' : 'NailsNow'}
         </Logo>
         <MenuButton onClick={toggleMenu} aria-label="Toggle menu">
-          {isMenuOpen ? '✕' : '☰'}
+          {isMenuOpe ? '✕' : '☰'}
         </MenuButton>
         <NavLinks>
-          <NavLink to={`${base}/features`}>Caracteristicas</NavLink>
-          <NavLink to={`${base}/pricing`}>Planes</NavLink>
+          <NavLink onClick={() => handleNavClick('#features')}>Caracteristicas</NavLink>
+          <NavLink onClick={() => handleNavClick('#pricing')}>Planes</NavLink>
           <ScheduleButton
             to={`${base}/login`}
             aria-label="Sign In"
@@ -273,8 +293,8 @@ function Header() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
           >
-            <MobileNavLink to={`${base}/features`} onClick={closeMenu}>Caracteristicas</MobileNavLink>
-            <MobileNavLink to={`${base}/pricing`} onClick={closeMenu}>Planes</MobileNavLink>
+            <MobileNavLink onClick={() => handleNavClick('#features')}>Caracteristicas</MobileNavLink>
+            <MobileNavLink onClick={() => handleNavClick('#pricing')}>Planes</MobileNavLink>
             <MobileScheduleButton 
               to={`${base}/login`}
               aria-label="Sign In"
